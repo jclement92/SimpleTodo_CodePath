@@ -26,7 +26,7 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-<img src='walkthrough.gif' title='SimpleTodo Video Walkthrough' height='650px' alt='SimpleTodo Video Walkthrough' />
+<img src='walkthrough_updated.gif' title='SimpleTodo Video Walkthrough' height='650px' alt='SimpleTodo Video Walkthrough' />
 
 ## Notes
 
