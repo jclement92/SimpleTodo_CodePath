@@ -3,13 +3,13 @@ package com.example.simpletodo;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,46 +46,42 @@ public class MainActivity extends AppCompatActivity {
 
         loadItems();
 
-        ItemsAdapter.OnLongClickListener longClickListener = new ItemsAdapter.OnLongClickListener() {
-            @Override
-            public void onItemLongClicked(int position) {
-                // Delete the item from the model
-                items.remove(position);
-                // Notify the adapter
-                itemsAdapter.notifyItemRemoved(position);
-                Toast.makeText(MainActivity.this, "Item removed", Toast.LENGTH_SHORT).show();
-                saveItems();
-            }
+        ItemsAdapter.OnLongClickListener longClickListener = position -> {
+            // Delete the item from the model
+            items.remove(position);
+            // Notify the adapter
+            itemsAdapter.notifyItemRemoved(position);
+            Toast.makeText(MainActivity.this, "Item removed", Toast.LENGTH_SHORT).show();
+            saveItems();
         };
 
-        ItemsAdapter.OnClickListener onClickListener = new ItemsAdapter.OnClickListener() {
-            @Override
-            public void onItemClicked(int position) {
-                Intent intent = new Intent(MainActivity.this, EditActivity.class);
-                intent.putExtra(KEY_ITEM_TEXT, items.get(position));
-                intent.putExtra(KEY_ITEM_POSITION, position);
-                startActivityForResult(intent, REQUEST_CODE);
-            }
+        ItemsAdapter.OnClickListener onClickListener = position -> {
+            Intent intent = new Intent(MainActivity.this, EditActivity.class);
+            intent.putExtra(KEY_ITEM_TEXT, items.get(position));
+            intent.putExtra(KEY_ITEM_POSITION, position);
+            startActivityForResult(intent, REQUEST_CODE);
         };
 
         itemsAdapter = new ItemsAdapter(items, longClickListener, onClickListener);
-        rvItems.setHasFixedSize(true);
 
+        rvItems.setHasFixedSize(true);
         rvItems.setAdapter(itemsAdapter);
         rvItems.setLayoutManager(new LinearLayoutManager(this));
 
-        btnAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String todoItem = etItem.getText().toString();
-                // Add the item to the model
-                items.add(todoItem);
-                // Notify adapter that an item is inserted
-                itemsAdapter.notifyItemInserted(items.size()-1);
-                etItem.setText("");
-                Toast.makeText(getApplicationContext(), "Item added", Toast.LENGTH_SHORT).show();
-                saveItems();
-            }
+        DividerItemDecoration dividerItemDecoration =
+                new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+
+        rvItems.addItemDecoration(dividerItemDecoration);
+
+        btnAdd.setOnClickListener(v -> {
+            String todoItem = etItem.getText().toString();
+            // Add the item to the model
+            items.add(todoItem);
+            // Notify adapter that an item is inserted
+            itemsAdapter.notifyItemInserted(items.size()-1);
+            etItem.setText("");
+            Toast.makeText(getApplicationContext(), "Item added", Toast.LENGTH_SHORT).show();
+            saveItems();
         });
     }
 
@@ -94,14 +90,17 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
-            String itemText = data.getStringExtra(KEY_ITEM_TEXT);
-            int position = data.getIntExtra(KEY_ITEM_POSITION, -1);
+            if (data != null) {
+                String itemText = data.getStringExtra(KEY_ITEM_TEXT);
+                int position = data.getIntExtra(KEY_ITEM_POSITION, -1);
+                items.set(position, itemText);
+                itemsAdapter.notifyItemChanged(position);
+                saveItems();
+                Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Error: Data is null", Toast.LENGTH_SHORT).show();
+            }
 
-            items.set(position, itemText);
-            itemsAdapter.notifyItemChanged(position);
-            saveItems();
-
-            Toast.makeText(this, "Item updated", Toast.LENGTH_SHORT).show();
         } else {
             Log.w(TAG, "Unknown call to onActivityResult");
         }

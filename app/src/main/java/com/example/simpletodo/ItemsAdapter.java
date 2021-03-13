@@ -20,9 +20,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
         void onItemLongClicked(int position);
     }
 
-    List<String> items;
-    OnLongClickListener longClickListener;
-    OnClickListener clickListener;
+    final List<String> items;
+    final OnLongClickListener longClickListener;
+    final OnClickListener clickListener;
 
     public ItemsAdapter(List<String> items, OnLongClickListener longClickListener, OnClickListener clickListener) {
         this.items = items;
@@ -58,7 +58,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
     // Container to provide easy access to views that represent each row of the list
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvItem;
+        final TextView tvItem;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -68,19 +68,12 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
         // Update the view inside of the view holder with this data
         public void bind(String item) {
             tvItem.setText(item);
-            tvItem.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    clickListener.onItemClicked(getAdapterPosition());
-                }
-            });
-            tvItem.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    // Notify the listener which position was long pressed
-                    longClickListener.onItemLongClicked(getAdapterPosition());
-                    return false;
-                }
+            tvItem.setOnClickListener(v -> clickListener.onItemClicked(getAdapterPosition()));
+
+            tvItem.setOnLongClickListener(v -> {
+                // Notify the listener which position was long pressed
+                longClickListener.onItemLongClicked(getAdapterPosition());
+                return false;
             });
         }
     }
